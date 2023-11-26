@@ -26,4 +26,10 @@
       <PackageReference Include="MetadataExtractor" Version="2.8.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="yyLib">
+        <HintPath>..\..\yyLib\yyLib\bin\Release\net8.0\yyLib.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

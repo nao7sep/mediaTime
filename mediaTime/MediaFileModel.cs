@@ -10,8 +10,8 @@ namespace mediaTime
         [JsonPropertyName ("local_timestamp")]
         public DateTime? LocalTimestamp { get; set; }
 
-        [JsonPropertyName ("original_file_name")]
-        public string? OriginalFileName { get; set; }
+        [JsonPropertyName ("original_file_name_without_extension")]
+        public string? OriginalFileNameWithoutExtension { get; set; }
 
         [JsonPropertyName ("extension")]
         public string? Extension { get; set; }
