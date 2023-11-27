@@ -14,12 +14,18 @@ namespace mediaTime
             if (metadata == null)
                 return MediaFileType.Unsupported;
 
-            // todo: Test if all JPEG images contain this.
+            // Confirmed all JPEG files (that I currently had) contained this directory.
 
             if (metadata.Any (x => x.Name.Equals ("JPEG", StringComparison.OrdinalIgnoreCase)))
                 return MediaFileType.Image;
 
-            // todo: Test with all available video files.
+            // Tested with a number of video files that I had in my old & new hard disks.
+
+            // 1. ".avi" files contained the "AVI" directory and nothing related to QuickTime.
+            // 2. ".mts" and ".m2ts" files were unreadable.
+            // 3. Some old QuickTime files contained local times in "Created" and "Modified".
+
+            // Currently, no other issues have been found.
 
             if (metadata.Any (x => x.Name.Equals ("QuickTime File Type", StringComparison.OrdinalIgnoreCase)))
                 return MediaFileType.Video;
@@ -27,10 +33,17 @@ namespace mediaTime
             return MediaFileType.Unsupported;
         }
 
+        // Result is trimmed.
+        // One of my current cameras returns "RICOH GR III       ".
+
+        // "Canon EOS 70D" seems to set "Model" in video files.
+        // https://exiftool.org/TagNames/QuickTime.html
+
         private static string? ReadModel (IReadOnlyList <MetadataExtractor.Directory>? metadata) =>
-            metadata?.FirstOrDefault (x => x.Name.Equals ("Exif IFD0", StringComparison.OrdinalIgnoreCase))?.Tags.
-                FirstOrDefault (x => x.Name.Equals ("Model", StringComparison.OrdinalIgnoreCase))?.Description?.Trim ();
-                // One of my current cameras returns "RICOH GR III       ".
+            (metadata?.FirstOrDefault (x => x.Name.Equals ("Exif IFD0", StringComparison.OrdinalIgnoreCase))?.Tags.
+                FirstOrDefault (x => x.Name.Equals ("Model", StringComparison.OrdinalIgnoreCase))?.Description ??
+            metadata?.FirstOrDefault (x => x.Name.Equals ("QuickTime Metadata Header", StringComparison.OrdinalIgnoreCase))?.Tags.
+                FirstOrDefault (x => x.Name.Equals ("Model", StringComparison.OrdinalIgnoreCase))?.Description)?.Trim ();
 
         private static bool TryReadDateTime (string filePath, IReadOnlyList <MetadataExtractor.Directory>? metadata, out DateTimeSource dateTimeSource, out DateTime dateTime)
         {

@@ -25,9 +25,13 @@ namespace mediaTime
         // https://github.com/drewnoakes/metadata-extractor-dotnet/blob/master/MetadataExtractor/Directory.cs
         // https://github.com/drewnoakes/metadata-extractor-dotnet/blob/master/MetadataExtractor/Tag.cs
 
+        public record DirectoryRecord (string directory_name, IEnumerable <TagRecord> tags);
+
+        public record TagRecord (string name, string? description);
+
         [JsonPropertyName ("metadata")]
-        public IEnumerable <(string directory_name, IEnumerable <(string tag_name, string? description)> tags)>? MetadataForSerialization =>
-            Metadata?.Select (x => (x.Name, x.Tags.Select (y => (y.Name, y.Description))));
+        public IEnumerable <DirectoryRecord>? MetadataForSerialization =>
+            Metadata?.Select (x => new DirectoryRecord (x.Name, x.Tags.Where (y => y.HasName).Select (y => new TagRecord (y.Name, y.Description))));
 
         [JsonPropertyName ("type")]
         public MediaFileType? Type { get; set; }
