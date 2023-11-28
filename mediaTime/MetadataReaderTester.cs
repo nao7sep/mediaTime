@@ -5,9 +5,9 @@ using yyLib;
 
 namespace mediaTime
 {
+#if DEBUG
     public static class MetadataReaderTester
     {
-#if DEBUG
         public static void Test (string [] args)
         {
             var xFiles = args.Select (x => MetadataReader.Read (x));
@@ -15,12 +15,19 @@ namespace mediaTime
             Console.WriteLine (string.Join ($"{Environment.NewLine}{Environment.NewLine}", xFiles.Select (x =>
             {
                 StringBuilder xBuilder = new StringBuilder ();
+
                 xBuilder.AppendLine ($"File Name: {Path.GetFileName (x.FilePath)}");
                 xBuilder.AppendLine ($"Type: {x.Type}");
                 xBuilder.AppendLine ($"Model: {x.Model.GetVisibleString ()}");
                 xBuilder.AppendLine ($"Date/Time Source: {x.DateTimeSource}");
                 xBuilder.AppendLine ($"Date/Time: {x.DateTime!.Value.ToString ("yyyy'-'MM'-'dd HH':'mm':'ss")}");
-                xBuilder.AppendLine ($"Minutes from File System Timestamp: {Math.Round (x.DateTime!.Value.ToUniversalTime ().Subtract (File.GetLastWriteTimeUtc (x.FilePath!)).TotalMinutes)}");
+
+                DateTime xAssumedLocalTime =
+                    x.DateTimeSource == DateTimeSource.Video_QuickTime_Created || x.DateTimeSource == DateTimeSource.Video_QuickTime_Modified ?
+                        x.DateTime!.Value.ToLocalTime () : x.DateTime!.Value;
+
+                xBuilder.AppendLine ($"Minutes from File System Timestamp: {Math.Round (xAssumedLocalTime.Subtract (File.GetLastWriteTime (x.FilePath!)).TotalMinutes)}");
+
                 return xBuilder.ToString ();
             })));
 
@@ -30,6 +37,6 @@ namespace mediaTime
 
             File.WriteAllText (xFilePath, xFileContents, Encoding.UTF8);
         }
-#endif
     }
+#endif
 }
