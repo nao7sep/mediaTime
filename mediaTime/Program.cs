@@ -117,7 +117,7 @@ namespace mediaTime
                     xFilesFileContents = JsonSerializer.Serialize (xFiles, yyJson.DefaultSerializationOptions);
 
                 yyDirectory.CreateParent (xFilesFilePath);
-                File.WriteAllText (xFilesFilePath, xFilesFileContents);
+                File.WriteAllText (xFilesFilePath, xFilesFileContents, Encoding.UTF8);
 
                 Console.WriteLine ($"Created: {xFilesFilePath}");
 
@@ -235,7 +235,7 @@ namespace mediaTime
 
                         // New File Name
 
-                        DateTime xNewTimestamp = xFile.DateTime!.Value.ToLocalTime ().AddMinutes (xMinutesToAdd);
+                        DateTime xNewTimestamp = xFile.DateTime!.Value.ToLocalTime ().AddMinutes (xMinutesToAdd); // Used later.
                         string xNewFileName = MediaFileModel.GetNewFileName (xFile, xMinutesToAdd);
 
                         bool xIsFileNameChanged = xNewFileName.Equals (xFileName, StringComparison.OrdinalIgnoreCase) == false;
@@ -257,7 +257,13 @@ namespace mediaTime
                             Console.WriteLine ($"From File System: {xFileSystemDateTime.ToString ("yyyyMMdd'-'HHmmss")}");
 
                             int xDiffFromFileSystemTimestamp = (int) Math.Round (xNewTimestamp.Subtract (xFileSystemDateTime).TotalMinutes);
+
+                            if (xDiffFromFileSystemTimestamp != 0)
+                                Console.ForegroundColor = ConsoleColor.Yellow;
+
                             Console.WriteLine ($"    Diff from FS: {xDiffFromFileSystemTimestamp} minutes");
+
+                            Console.ResetColor ();
                         }
                     }
 
@@ -283,6 +289,85 @@ namespace mediaTime
                             break;
                     }
                 }
+
+                // -----------------------------------------------------------------------------
+
+                // Renames the files.
+
+                List <ResultModel> xResults = new ();
+
+                foreach (MediaFileModel xFile in xFiles)
+                {
+                    string xNewFileName = MediaFileModel.GetNewFileName (xFile, xMinutesToAdd),
+                        xNewFilePath = Path.Join (Path.GetDirectoryName (xFile.FilePath)!, xNewFileName);
+
+                    if (xNewFilePath.Equals (xFile.FilePath, StringComparison.OrdinalIgnoreCase) == false)
+                    {
+                        try
+                        {
+                            File.Move (xFile.FilePath!, xNewFilePath);
+
+                            xResults.Add (new ResultModel
+                            {
+                                FilePath = xFile.FilePath,
+                                AddedMinutes = xMinutesToAdd,
+                                NewFilePath = xNewFilePath,
+                                Type = ResultType.Success
+                            });
+                        }
+
+                        catch (Exception xException)
+                        {
+                            xResults.Add (new ResultModel
+                            {
+                                FilePath = xFile.FilePath,
+                                AddedMinutes = xMinutesToAdd,
+                                NewFilePath = xNewFilePath,
+                                Type = ResultType.FailedToRename,
+                                ExceptionString = xException.ToString ()
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        xResults.Add (new ResultModel
+                        {
+                            FilePath = xFile.FilePath,
+                            AddedMinutes = xMinutesToAdd,
+                            NewFilePath = xNewFilePath,
+                            Type = ResultType.Unchanged
+                        });
+                    }
+                }
+
+                var xRenamedFiles = xResults.Where (x => x.Type == ResultType.Success).ToArray ();
+                Console.WriteLine ($"Renamed Files: {xRenamedFiles.Length}");
+
+                var xFailedToRenameFiles = xResults.Where (x => x.Type == ResultType.FailedToRename).ToArray ();
+                Console.WriteLine ($"Failed-to-Rename Files: {xFailedToRenameFiles.Length}");
+
+                if (xFailedToRenameFiles.Length > 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine (string.Join (Environment.NewLine, xFailedToRenameFiles.Select (x => $"    {x.FilePath}")));
+                    Console.ResetColor ();
+                }
+
+                var xUnchangedFiles = xResults.Where (x => x.Type == ResultType.Unchanged).ToArray ();
+                Console.WriteLine ($"Unchanged Files: {xUnchangedFiles.Length}");
+
+                // -----------------------------------------------------------------------------
+
+                // Creates a JSON file with the results.
+
+                string xResultsFilePath = Path.Join (yyApplicationDirectory.MapPath ("Logs"), $"Results-{xStartNowString}.json"),
+                    xResultsFileContents = JsonSerializer.Serialize (xResults, yyJson.DefaultSerializationOptions);
+
+                yyDirectory.CreateParent (xResultsFilePath);
+                File.WriteAllText (xResultsFilePath, xResultsFileContents, Encoding.UTF8);
+
+                Console.WriteLine ($"Created: {xResultsFilePath}");
             }
 
             catch (Exception xException)
