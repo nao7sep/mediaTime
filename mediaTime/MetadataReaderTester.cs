@@ -19,14 +19,24 @@ namespace mediaTime
                 xBuilder.AppendLine ($"File Name: {Path.GetFileName (x.FilePath)}");
                 xBuilder.AppendLine ($"Type: {x.Type}");
                 xBuilder.AppendLine ($"Model: {x.Model.GetVisibleString ()}");
-                xBuilder.AppendLine ($"Date/Time Source: {x.DateTimeSource}");
-                xBuilder.AppendLine ($"Date/Time: {x.DateTime!.Value.ToString ("yyyy'-'MM'-'dd HH':'mm':'ss")}");
 
-                DateTime xAssumedLocalTime =
-                    x.DateTimeSource == DateTimeSource.Video_QuickTime_Created || x.DateTimeSource == DateTimeSource.Video_QuickTime_Modified ?
-                        x.DateTime!.Value.ToLocalTime () : x.DateTime!.Value;
+                if (x.DateTimeSource != null)
+                {
+                    xBuilder.AppendLine ($"Date/Time Source: {x.DateTimeSource}");
+                    xBuilder.AppendLine ($"Date/Time: {x.DateTime!.Value.ToString ("yyyy'-'MM'-'dd HH':'mm':'ss")}");
 
-                xBuilder.AppendLine ($"Minutes from File System Timestamp: {Math.Round (xAssumedLocalTime.Subtract (File.GetLastWriteTime (x.FilePath!)).TotalMinutes)}");
+                    DateTime xAssumedLocalTime =
+                        x.DateTimeSource == DateTimeSource.Video_QuickTime_Created || x.DateTimeSource == DateTimeSource.Video_QuickTime_Modified ?
+                            x.DateTime!.Value.ToLocalTime () : x.DateTime!.Value;
+
+                    xBuilder.AppendLine ($"Minutes from File System Timestamp: {Math.Round (xAssumedLocalTime.Subtract (File.GetLastWriteTime (x.FilePath!)).TotalMinutes)}");
+                }
+
+                else
+                {
+                    xBuilder.AppendLine ("Date/Time Source: (N/A)");
+                    xBuilder.AppendLine ("Date/Time: (N/A)");
+                }
 
                 return xBuilder.ToString ();
             })));

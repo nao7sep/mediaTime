@@ -58,8 +58,19 @@ namespace mediaTime
 
                     if (xDateTimeString != null && DateTime.TryParseExact (xDateTimeString, dateTimeFormat, CultureInfo.InvariantCulture, styles, out dateTime))
                     {
-                        dateTimeSource = expectedSource;
-                        return true;
+                        // MetadataExtractor returns "Fri Jan 01 00:00:00 1904" as "Created" and "Modified" for video files where the data/time values are missing.
+                        // https://github.com/drewnoakes/metadata-extractor-dotnet/blob/master/MetadataExtractor/Formats/QuickTime/QuickTimeMetadataReader.cs
+
+                        // Even my oldest cameras should be around 15 years old (as of 2023),
+                        // but the first time I ever used a digital camera should be around 28 years ago
+                        // and I feel the boundary should be earlier than 2000.
+                        // https://en.wikipedia.org/wiki/Unix_time
+
+                        if (dateTime.Year >= 1970)
+                        {
+                            dateTimeSource = expectedSource;
+                            return true;
+                        }
                     }
 
                     // These values will be ignored.
@@ -87,26 +98,68 @@ namespace mediaTime
                     return true;
             }
 
-            try
+            // Refer to the added comment in "DateTimeSource.cs".
+
+            static DateTime? GetCreationTimeOrLastWriteTime (bool getsCreationTime, string filePath)
             {
-                dateTime = File.GetCreationTime (filePath);
-                dateTimeSource = DateTimeSource.FileSystem_CreationTime;
+                try
+                {
+                    DateTime xDateTime = getsCreationTime ? File.GetCreationTime (filePath) : File.GetLastWriteTime (filePath);
+
+                    if (xDateTime.Year < 1980 + 1)
+                        return null;
+
+                    return xDateTime;
+                }
+
+                catch
+                {
+                    return null;
+                }
+            }
+
+            DateTime? xCreationTime = GetCreationTimeOrLastWriteTime (true, filePath),
+                xLastWriteTime = GetCreationTimeOrLastWriteTime (false, filePath);
+
+            // Simple and stupid code that's easy to read:
+
+            if (xCreationTime != null)
+            {
+                if (xLastWriteTime != null)
+                {
+                    // Technically, the right one to refer to is the Creation Time.
+                    // If the two match, it must be FileSystem_CreationTime.
+
+                    if (xCreationTime <= xLastWriteTime)
+                    {
+                        dateTimeSource = DateTimeSource.FileSystem_CreationTime;
+                        dateTime = xCreationTime.Value;
+                    }
+
+                    else
+                    {
+                        dateTimeSource = DateTimeSource.FileSystem_LastModifiedTime;
+                        dateTime = xLastWriteTime.Value;
+                    }
+                }
+
+                else
+                {
+                    dateTimeSource = DateTimeSource.FileSystem_CreationTime;
+                    dateTime = xCreationTime.Value;
+                }
+
                 return true;
             }
 
-            catch
+            else
             {
-            }
-
-            try
-            {
-                dateTime = File.GetLastWriteTime (filePath);
-                dateTimeSource = DateTimeSource.FileSystem_LastModifiedTime;
-                return true;
-            }
-
-            catch
-            {
+                if (xLastWriteTime != null)
+                {
+                    dateTimeSource = DateTimeSource.FileSystem_LastModifiedTime;
+                    dateTime = xLastWriteTime.Value;
+                    return true;
+                }
             }
 
             // These values will be ignored.

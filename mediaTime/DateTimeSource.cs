@@ -64,6 +64,19 @@
             //    - Reflects the last time the file's metadata changed.
             //    - Note: ctime updates for changes to the file's inode information, not just its content.
 
+        // Added later: When a file is copied, Windows may set the Creation Time to the current time,
+        // making it a lot later than the Last Modified Time.
+
+        // However, if we just use the smaller value of the two, we may retrieve an epoch time value from somewhere.
+        // Like, I've seen files where one or more of the timestamps' years were 1970/1980 while the others seemed accurate
+        // most likely because the data was missing and one of the programs that dealt with them just returned one of the internal offset values.
+        // https://en.wikipedia.org/wiki/Unix_time
+        // http://elm-chan.org/docs/fat_e.html
+
+        // One should-be-OK workaround is to read the Creation Time if it's available,
+        // continue with reading the Last Modified Time and use the smaller value that is equal to or later than the year 1980 + 1.
+        // I dont really remember seeing the Last Modified Time looking like an epoch time value, though.
+
         FileSystem_CreationTime,
         FileSystem_LastModifiedTime
     }
