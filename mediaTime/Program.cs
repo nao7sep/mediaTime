@@ -131,6 +131,7 @@ namespace mediaTime
                     Console.WriteLine ("Cant continue with files without date/time info at all.");
                     Console.WriteLine ("It is recommended to investigate them.");
                     Console.ResetColor ();
+                    return;
                 }
 
                 // -----------------------------------------------------------------------------
@@ -161,6 +162,127 @@ namespace mediaTime
                 Console.Write ("Press any key to continue or just close this window to exit: ");
                 Console.ReadKey (true);
                 Console.WriteLine ();
+
+                // -----------------------------------------------------------------------------
+
+                // Preview and adjustment.
+
+                int xMinutesToAdd = 0;
+
+                while (true)
+                {
+                    string xBorderline = new ('-', 80);
+
+                    Console.WriteLine (xBorderline);
+                    Console.WriteLine ($"   Added Minutes: {xMinutesToAdd}");
+                    Console.WriteLine (xBorderline);
+
+                    bool xIsFirst = true;
+
+                    foreach (MediaFileModel xFile in xFiles)
+                    {
+                        if (xIsFirst)
+                            xIsFirst = false;
+
+                        else Console.WriteLine ();
+
+                        // -----------------------------------------------------------------------------
+
+                        // File Type
+
+                        Console.WriteLine ($"       File Type: {xFile.Type}");
+
+                        // -----------------------------------------------------------------------------
+
+                        // Model
+
+                        if (xFile.Model != null)
+                            Console.WriteLine ($"           Model: {xFile.Model}");
+
+                        // -----------------------------------------------------------------------------
+
+                        // Date/Time Source
+
+                        bool xIsDateTimeFromMetadata =
+                            (xFile.Type == MediaFileType.Image &&
+                                (xFile.DateTimeSource == DateTimeSource.Image_Exif_DateTimeOriginal ||
+                                xFile.DateTimeSource == DateTimeSource.Image_Exif_DateTimeDigitized ||
+                                xFile.DateTimeSource == DateTimeSource.Image_Exif_DateTime)) ||
+                            (xFile.Type == MediaFileType.Video &&
+                                (xFile.DateTimeSource == DateTimeSource.Video_QuickTime_Created ||
+                                xFile.DateTimeSource == DateTimeSource.Video_QuickTime_Modified));
+
+                        bool xIsSupportedFileNotContainingDateTimeInMetadata =
+                            xFile.Type != MediaFileType.Unsupported && xIsDateTimeFromMetadata == false;
+
+                        if (xIsSupportedFileNotContainingDateTimeInMetadata)
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+
+                        Console.WriteLine ($"Date/Time Source: {xFile.DateTimeSource}{(xIsSupportedFileNotContainingDateTimeInMetadata ? " (Not from metadata)" : string.Empty)}");
+
+                        Console.ResetColor ();
+
+                        // -----------------------------------------------------------------------------
+
+                        // File Name
+
+                        string xIndentationForFileName = xFile.LocalTimestamp == null ? "                 " : string.Empty,
+                            xFileName = Path.GetFileName (xFile.FilePath)!;
+
+                        Console.WriteLine ($"       File Name: {xIndentationForFileName}{xFileName}");
+
+                        // -----------------------------------------------------------------------------
+
+                        // New File Name
+
+                        DateTime xNewTimestamp = xFile.DateTime!.Value.ToLocalTime ().AddMinutes (xMinutesToAdd);
+                        string xNewFileName = MediaFileModel.GetNewFileName (xFile, xMinutesToAdd);
+
+                        bool xIsFileNameChanged = xNewFileName.Equals (xFileName, StringComparison.OrdinalIgnoreCase) == false;
+
+                        if (xIsFileNameChanged)
+                            Console.ForegroundColor = ConsoleColor.Blue;
+
+                        Console.WriteLine ($"   New File Name: {xNewFileName}{(xIsFileNameChanged == false ? " (Unchanged)" : string.Empty)}");
+
+                        Console.ResetColor ();
+
+                        // -----------------------------------------------------------------------------
+
+                        // File System Timestamp
+
+                        if (xIsDateTimeFromMetadata &&
+                            MetadataReader.TryReadFileSystemTimestamp (xFile.FilePath!, out _, out DateTime xFileSystemDateTime))
+                        {
+                            Console.WriteLine ($"From File System: {xFileSystemDateTime.ToString ("yyyyMMdd'-'HHmmss")}");
+
+                            int xDiffFromFileSystemTimestamp = (int) Math.Round (xNewTimestamp.Subtract (xFileSystemDateTime).TotalMinutes);
+                            Console.WriteLine ($"    Diff from FS: {xDiffFromFileSystemTimestamp} minutes");
+                        }
+                    }
+
+                    Console.WriteLine (xBorderline);
+
+                    Console.WriteLine ("1) Input minutes to add to the read timestamps or");
+                    Console.WriteLine ("2) Type OK to rename the files and close this window or");
+                    Console.Write ("3) Just close this window now to cancel: ");
+
+                    string? xInput = Console.ReadLine ();
+
+                    if (string.IsNullOrWhiteSpace (xInput) == false)
+                    {
+                        string xTrimmed = xInput.Trim ();
+
+                        if (int.TryParse (xTrimmed, out int xMinutesToAddInput))
+                        {
+                            xMinutesToAdd = xMinutesToAddInput;
+                            continue;
+                        }
+
+                        if (xTrimmed.Equals ("OK", StringComparison.OrdinalIgnoreCase))
+                            break;
+                    }
+                }
             }
 
             catch (Exception xException)
