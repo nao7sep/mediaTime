@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using yyLib;
 
-namespace mediaTime
+namespace yyMediaTime
 {
     public static partial class MetadataReader
     {

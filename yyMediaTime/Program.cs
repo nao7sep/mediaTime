@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using yyLib;
 
-namespace mediaTime
+namespace yyMediaTime
 {
     internal class Program
     {

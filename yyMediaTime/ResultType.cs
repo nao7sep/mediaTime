@@ -1,4 +1,4 @@
-﻿namespace mediaTime
+﻿namespace yyMediaTime
 {
     public enum ResultType
     {

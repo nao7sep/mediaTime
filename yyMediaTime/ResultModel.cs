@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace mediaTime
+namespace yyMediaTime
 {
     public class ResultModel
     {
