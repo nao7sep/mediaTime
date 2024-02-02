@@ -1,0 +1,16 @@
+﻿[Delete]
+App
+
+[Copy]
+yyMediaTime/bin/Release/net8.0 > App
+
+[Delete]
+App/Logs
+App/yyLib.pdb
+App/yyMediaTime.pdb
+
+[Exclude]
+.git
+.vs
+yyMediaTime/bin
+yyMediaTime/obj
