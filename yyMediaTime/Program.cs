@@ -27,7 +27,7 @@ namespace yyMediaTime
                     return;
                 }
 
-                List <string> xFilePaths = new ();
+                List <string> xFilePaths = [];
 
                 foreach (string xArg in args)
                 {
@@ -294,7 +294,7 @@ namespace yyMediaTime
 
                 // Renames the files.
 
-                List <ResultModel> xResults = new ();
+                List <ResultModel> xResults = [];
 
                 foreach (MediaFileModel xFile in xFiles)
                 {
