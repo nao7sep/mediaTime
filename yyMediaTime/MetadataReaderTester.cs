@@ -14,7 +14,7 @@ namespace yyMediaTime
 
             Console.WriteLine (string.Join ($"{Environment.NewLine}{Environment.NewLine}", xFiles.Select (x =>
             {
-                StringBuilder xBuilder = new StringBuilder ();
+                StringBuilder xBuilder = new ();
 
                 xBuilder.AppendLine ($"File Name: {Path.GetFileName (x.FilePath)}");
                 xBuilder.AppendLine ($"Type: {x.Type}");
