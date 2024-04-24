@@ -173,9 +173,9 @@ namespace yyMediaTime
             return TryReadFileSystemTimestamp (filePath, out dateTimeSource, out dateTime);
         }
 
-        public static MediaFileModel Read (string filePath)
+        public static MediaFileInfo Read (string filePath)
         {
-            MediaFileModel xMediaFile = new ();
+            MediaFileInfo xMediaFile = new ();
 
             // Assuming the path is proper.
             // If not, an exception will be thrown somewhere and the upper method will catch it.

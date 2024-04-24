@@ -179,7 +179,7 @@ namespace yyMediaTime
 
                     bool xIsFirst = true;
 
-                    foreach (MediaFileModel xFile in xFiles)
+                    foreach (MediaFileInfo xFile in xFiles)
                     {
                         if (xIsFirst)
                             xIsFirst = false;
@@ -236,7 +236,7 @@ namespace yyMediaTime
                         // New File Name
 
                         DateTime xNewTimestamp = xFile.DateTime!.Value.ToLocalTime ().AddMinutes (xMinutesToAdd); // Used later.
-                        string xNewFileName = MediaFileModel.GetNewFileName (xFile, xMinutesToAdd);
+                        string xNewFileName = MediaFileInfo.GetNewFileName (xFile, xMinutesToAdd);
 
                         bool xIsFileNameChanged = xNewFileName.Equals (xFileName, StringComparison.OrdinalIgnoreCase) == false;
 
@@ -294,11 +294,11 @@ namespace yyMediaTime
 
                 // Renames the files.
 
-                List <ResultModel> xResults = [];
+                List <ResultInfo> xResults = [];
 
-                foreach (MediaFileModel xFile in xFiles)
+                foreach (MediaFileInfo xFile in xFiles)
                 {
-                    string xNewFileName = MediaFileModel.GetNewFileName (xFile, xMinutesToAdd),
+                    string xNewFileName = MediaFileInfo.GetNewFileName (xFile, xMinutesToAdd),
                         xNewFilePath = Path.Join (Path.GetDirectoryName (xFile.FilePath)!, xNewFileName);
 
                     if (xNewFilePath.Equals (xFile.FilePath, StringComparison.OrdinalIgnoreCase) == false)
@@ -307,7 +307,7 @@ namespace yyMediaTime
                         {
                             File.Move (xFile.FilePath!, xNewFilePath);
 
-                            xResults.Add (new ResultModel
+                            xResults.Add (new ResultInfo
                             {
                                 FilePath = xFile.FilePath,
                                 AddedMinutes = xMinutesToAdd,
@@ -318,7 +318,7 @@ namespace yyMediaTime
 
                         catch (Exception xException)
                         {
-                            xResults.Add (new ResultModel
+                            xResults.Add (new ResultInfo
                             {
                                 FilePath = xFile.FilePath,
                                 AddedMinutes = xMinutesToAdd,
@@ -331,7 +331,7 @@ namespace yyMediaTime
 
                     else
                     {
-                        xResults.Add (new ResultModel
+                        xResults.Add (new ResultInfo
                         {
                             FilePath = xFile.FilePath,
                             AddedMinutes = xMinutesToAdd,
