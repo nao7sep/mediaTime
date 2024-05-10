@@ -113,7 +113,7 @@ namespace yyMediaTime
 
                 // Creates a JSON file with the files' metadata.
 
-                string xFilesFilePath = Path.Join (yyApplicationDirectory.MapPath ("Logs"), $"Files-{xStartNowString}.json"),
+                string xFilesFilePath = Path.Join (yyAppDirectory.MapPath ("Logs"), $"Files-{xStartNowString}.json"),
                     xFilesFileContents = JsonSerializer.Serialize (xFiles, yyJson.DefaultSerializationOptions);
 
                 yyDirectory.CreateParent (xFilesFilePath);
@@ -361,7 +361,7 @@ namespace yyMediaTime
 
                 // Creates a JSON file with the results.
 
-                string xResultsFilePath = Path.Join (yyApplicationDirectory.MapPath ("Logs"), $"Results-{xStartNowString}.json"),
+                string xResultsFilePath = Path.Join (yyAppDirectory.MapPath ("Logs"), $"Results-{xStartNowString}.json"),
                     xResultsFileContents = JsonSerializer.Serialize (xResults, yyJson.DefaultSerializationOptions);
 
                 yyDirectory.CreateParent (xResultsFilePath);
