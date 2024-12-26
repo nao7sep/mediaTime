@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text;
 using yyLib;
 
-namespace yyMediaTime
+namespace mediaTime
 {
 #if DEBUG
     public static class MetadataReaderTester

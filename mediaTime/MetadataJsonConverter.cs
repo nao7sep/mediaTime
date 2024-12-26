@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using yyLib;
 
-namespace yyMediaTime
+namespace mediaTime
 {
     public class MetadataJsonConverter: JsonConverter <IReadOnlyList <MetadataExtractor.Directory>>
     {

@@ -1,4 +1,4 @@
-﻿namespace yyMediaTime
+﻿namespace mediaTime
 {
     public enum DateTimeSource
     {
